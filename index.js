@@ -3,6 +3,14 @@
  */
 
 (() => {
+  /*
+   * まず、XMLHttpRequestオブジェクトを使用してAPIエンドポイントにPOST
+   * リクエストを作成し、APIキーをHTTPリクエストのヘッダーに追加する。
+   * 次に、リクエストのボディに、生成する画像に関するパラメータを追加
+   * して送信する。その後、XMLHttpRequestオブジェクトを使用してサーバー
+   * からのレスポンスを取得し、待ち受ける。最後に、サーバーからのレス
+   * ポンスを取得し、画像のURLを取得する。
+   */
   const getImageUrl = async () => {
     wait.hidden = false;
     error.innerText = "";
@@ -60,7 +68,7 @@
       .filter((s) => re.test(s))[0];
 
     return !!res ? res.split("=")[1] : null;
-  }
+  };
 
   const key = getCookie("api_key");
   api_key.value = !!key ? key : "";
