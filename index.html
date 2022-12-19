@@ -1,0 +1,15 @@
+<script src="./index.js" type="module"></script>
+<style>
+  #api_key, #prompt_area { min-width: 48em; }
+  #error { color: red; }
+</style>
+OpenAI frontend.
+<label for="api_key">API Key</label>
+<input id="api_key" placeholder="48 alphanumeric characters">
+<label for="prompt_area">Prompt</label>
+<textarea id="prompt_area" placeholder="A two-story pink house with a white fence and a red door"></textarea>
+<!-- <button id="generate_button" type="button">generate</button> -->
+<button id="generate_button">generate</button>
+<h1 id="wait" hidden>wait.</h1>
+<img id="image"></div>
+<pre id="error"></pre>
