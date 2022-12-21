@@ -17,7 +17,7 @@
 
     const request = new XMLHttpRequest();
     const apiUrl = "https://api.openai.com/v1/images/generations"; // APIエンドポイントのURLを指定する。
-    request.open("POST", apiUrl, true); // GETリクエストを作成する。
+    request.open("POST", apiUrl, true); // POSTリクエストを作成する。
     request.setRequestHeader("Content-Type", "application/json");
     request.setRequestHeader("Authorization", `Bearer ${api_key.value}`); // APIキーをHTTPリクエストのヘッダーに追加する。
 
