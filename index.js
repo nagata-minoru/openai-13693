@@ -56,7 +56,62 @@
     image.src = JSON.parse(response).data[0].url;
   };
 
+  const getEditImageUrl = async () => {
+    console.log("start");
+    wait.hidden = false;
+    error.innerText = "";
+
+    // FormDataオブジェクトを生成する
+    const formData = new FormData();
+
+    // HTMLのinput要素からファイルを取得する
+    const fileInput = file_input;
+    const file = fileInput.files[0];
+
+    // プロンプトを追加する
+    formData.append("prompt", prompt_area.value);
+
+    // ファイルを追加する
+    formData.append("image", file);
+
+    // XMLHttpRequestオブジェクトを生成する
+    var request = new XMLHttpRequest();
+
+    // POSTリクエストを送る
+    request.open("POST", "https://api.openai.com/v1/images/edits");
+
+    request.setRequestHeader("Authorization", `Bearer ${api_key.value}`); // APIキーをHTTPリクエストのヘッダーに追加する。
+
+    // リクエストボディを設定する
+    request.send(formData);
+
+    // レスポンスを待つ
+    await new Promise((resolve, reject) => {
+      request.onreadystatechange = function () {
+        if (request.readyState != 4) return;
+        if (request.status >= 400) {
+          reject(request.response);
+        }
+        resolve();
+      };
+    }).catch((e) => (error.innerText = e));
+
+    document.cookie = `api_key=${api_key.value}`;
+    image.onload = () => wait.hidden = true;
+    image.src = JSON.parse(request.response).data[0].url;
+  };
+
+  const setPreview = (input) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(input.files[0]);
+    fileReader.onload = () => image.src = fileReader.result;
+  }
+
   generate_button.onclick = () => getImageUrl(); // イベントハンドラを設定する。
+
+  file_input.onchange = () => setPreview(file_input);
+
+  edit_button.onclick = () => getEditImageUrl();
 
   /*
    * Cookieから特定のキーの値を取得する。
