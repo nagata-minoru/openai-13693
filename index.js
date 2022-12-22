@@ -56,36 +56,30 @@
     image.src = JSON.parse(response).data[0].url;
   };
 
+  /*
+   * OpenAIのAPIを使用して画像を編集する。
+   */
   const getEditImageUrl = async () => {
-    console.log("start");
     wait.hidden = false;
     error.innerText = "";
 
-    // FormDataオブジェクトを生成する
-    const formData = new FormData();
+    const formData = new FormData(); // FormDataオブジェクトを生成する。
 
-    // HTMLのinput要素からファイルを取得する
+    // HTMLのinput要素からファイルを取得する。
     const fileInput = file_input;
     const file = fileInput.files[0];
 
-    // プロンプトを追加する
-    formData.append("prompt", prompt_area.value);
+    formData.append("prompt", prompt_area.value); // プロンプトを追加する。
+    formData.append("size", "512x512"); // サイズを指定する
+    formData.append("image", file); // ファイルを追加する。
 
-    // ファイルを追加する
-    formData.append("image", file);
+    const request = new XMLHttpRequest(); // XMLHttpRequestオブジェクトを生成する。
 
-    // XMLHttpRequestオブジェクトを生成する
-    var request = new XMLHttpRequest();
-
-    // POSTリクエストを送る
-    request.open("POST", "https://api.openai.com/v1/images/edits");
-
+    request.open("POST", "https://api.openai.com/v1/images/edits"); // POSTリクエストを作る。
     request.setRequestHeader("Authorization", `Bearer ${api_key.value}`); // APIキーをHTTPリクエストのヘッダーに追加する。
+    request.send(formData); // リクエストボディを設定する。
 
-    // リクエストボディを設定する
-    request.send(formData);
-
-    // レスポンスを待つ
+    // レスポンスを待つ。
     await new Promise((resolve, reject) => {
       request.onreadystatechange = function () {
         if (request.readyState != 4) return;
@@ -97,15 +91,15 @@
     }).catch((e) => (error.innerText = e));
 
     document.cookie = `api_key=${api_key.value}`;
-    image.onload = () => wait.hidden = true;
+    image.onload = () => (wait.hidden = true);
     image.src = JSON.parse(request.response).data[0].url;
   };
 
   const setPreview = (input) => {
     const fileReader = new FileReader();
     fileReader.readAsDataURL(input.files[0]);
-    fileReader.onload = () => image.src = fileReader.result;
-  }
+    fileReader.onload = () => (image.src = fileReader.result);
+  };
 
   generate_button.onclick = () => getImageUrl(); // イベントハンドラを設定する。
 
