@@ -101,11 +101,67 @@
     fileReader.onload = () => (image.src = fileReader.result);
   };
 
+  const setCanvas = async (input) => {
+    const img = new Image();
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(input.files[0]);
+    fileReader.onload = () => {
+      img.src = fileReader.result;
+      img.onload = () => {
+        const context = canvas.getContext("2d");
+        context.drawImage(img, 256, 0, 256, 512, 0, 0, 256, 512);
+      };
+      image.src = fileReader.result;
+    };
+  };
+
+  const editCanvas = async () => {
+    wait.hidden = false;
+    error.innerText = "";
+
+    const file = await new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(new File([blob], "img.png"));
+      });
+    });
+
+    const formData = new FormData(); // FormDataオブジェクトを生成する。
+
+    formData.append("prompt", prompt_area.value); // プロンプトを追加する。
+    formData.append("size", "512x512"); // サイズを指定する
+    formData.append("image", file); // 画像を追加する。
+
+    const request = new XMLHttpRequest(); // XMLHttpRequestオブジェクトを生成する。
+
+    request.open("POST", "https://api.openai.com/v1/images/edits"); // POSTリクエストを作る。
+    request.setRequestHeader("Authorization", `Bearer ${api_key.value}`); // APIキーをHTTPリクエストのヘッダーに追加する。
+    request.send(formData); // リクエストボディを設定する。
+
+    // レスポンスを待つ。
+    await new Promise((resolve, reject) => {
+      request.onreadystatechange = function () {
+        if (request.readyState != 4) return;
+        if (request.status >= 400) {
+          reject(request.response);
+        }
+        resolve();
+      };
+    }).catch((e) => (error.innerText = e));
+
+    document.cookie = `api_key=${api_key.value}`;
+    image.onload = () => (wait.hidden = true);
+    image.src = JSON.parse(request.response).data[0].url;
+  };
+
   generate_button.onclick = () => getImageUrl(); // イベントハンドラを設定する。
 
   file_input.onchange = () => setPreview(file_input);
 
   edit_button.onclick = () => getEditImageUrl();
+
+  edit_canvas_input.onchange = () => setCanvas(edit_canvas_input);
+
+  edit_canvas_button.onclick = () => editCanvas();
 
   /*
    * Cookieから特定のキーの値を取得する。
