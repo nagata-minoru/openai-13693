@@ -105,25 +105,23 @@
     const img = new Image();
     const fileReader = new FileReader();
     fileReader.readAsDataURL(input.files[0]);
-    fileReader.onload = () => {
-      img.src = fileReader.result;
-      img.onload = () => {
-        const context = canvas.getContext("2d");
-        context.drawImage(img, 256, 0, 256, 512, 0, 0, 256, 512);
-      };
-      image.src = fileReader.result;
-    };
+
+    await new Promise((resolve) => (fileReader.onload = () => resolve()));
+
+    img.src = fileReader.result;
+    await new Promise((resolve) => (img.onload = () => resolve()));
+    const context = canvas.getContext("2d");
+    const edit_context = edit_canvas.getContext("2d");
+    context.drawImage(img, 256, 0, 256, 512, 0, 0, 256, 512);
+    edit_context.drawImage(img, 0, 0);
+    image.src = fileReader.result;
   };
 
   const editCanvas = async () => {
     wait.hidden = false;
     error.innerText = "";
 
-    const file = await new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(new File([blob], "img.png"));
-      });
-    });
+    const file = await new Promise((resolve) => canvas.toBlob((blob) => resolve(new File([blob], "img.png"))));
 
     const formData = new FormData(); // FormDataオブジェクトを生成する。
 
@@ -149,8 +147,22 @@
     }).catch((e) => (error.innerText = e));
 
     document.cookie = `api_key=${api_key.value}`;
-    image.onload = () => (wait.hidden = true);
+
     image.src = JSON.parse(request.response).data[0].url;
+
+    await new Promise((resolve) => (image.onload = () => resolve()));
+
+    const context = canvas.getContext("2d");
+    const edit_context = edit_canvas.getContext("2d");
+
+    wait.hidden = true;
+    context.drawImage(image, 0, 0);
+    edit_context.clearRect(0, 0, 512, 512);
+    edit_context.drawImage(image, 256, 0, 256, 512, 0, 0, 256, 512);
+
+    html2canvas(canvas).then(function (canvas) {
+      document.body.appendChild(canvas);
+    });
   };
 
   generate_button.onclick = () => getImageUrl(); // イベントハンドラを設定する。
@@ -162,6 +174,12 @@
   edit_canvas_input.onchange = () => setCanvas(edit_canvas_input);
 
   edit_canvas_button.onclick = () => editCanvas();
+
+  html2canvas_button.onclick = () => {
+    html2canvas(document.body).then(function (canvas) {
+      document.body.appendChild(canvas);
+    });
+  };
 
   /*
    * Cookieから特定のキーの値を取得する。
